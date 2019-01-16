@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
 
@@ -126,12 +123,15 @@ namespace CopyFileTest
             this.fromDir = fromDir;
             this.toDir = toDir;
             Tasks = new ConcurrentQueue<string[]>();
-
         }
 
         public void startCopy()
         {
-            Thread thread0 = new Thread(new ThreadStart(createDirThenEnqueue));
+            Thread thread0 = new Thread(new ThreadStart(()=> 
+            {
+                createDirThenEnqueue(fromDir, toDir);
+                IsScanComplete = true;
+            }));
             thread0.IsBackground = true;
             thread0.Start();
 
@@ -139,12 +139,6 @@ namespace CopyFileTest
             {
                 ThreadPool.QueueUserWorkItem(copyFileTask);
             }
-        }
-
-        private void createDirThenEnqueue()
-        {
-            createDirThenEnqueue(fromDir, toDir);
-            IsScanComplete = true;
         }
 
         private void createDirThenEnqueue(string fromDir, string toDir)
